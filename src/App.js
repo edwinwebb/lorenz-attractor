@@ -1,57 +1,82 @@
-import React from 'react'
-import { Canvas, } from 'react-three-fiber';
-import {Line,OrbitControls,Html} from '@react-three/drei';
+import React, {useState} from 'react'
+import { Canvas } from 'react-three-fiber';
+import {Line,OrbitControls} from '@react-three/drei';
 
-function LineGeomTest() {
-    const points = test();
+function LineGeomTest(props) {
+    const {data} =  props
+    const points = lorenzPoints(data);
+    
     return(
-        <Line lineWidth={1} points={ points } />
+        <Line lineWidth={1} points={points} />
     )
 }
 
+function lorenzPoints(data) {
+    const {
+        start,
+        end,
+        increment,
+        rho,
+        sigma,
+        beta
+    } = data;
+    let {
+        x,
+        y,
+        z
+    } = {...data}
+    const points = [];
+    const pointCap = 100000;
+    for(let i = start; i < Math.min(pointCap, end); i+=increment) {
+        x = x + increment * (sigma * (y-x));
+        y = y + increment * (x * (rho-z) - y);
+        z = z + increment * (x * y - beta * z);
+        points.push([x,y,z])
+    }
+    return points
+}
 
-function test(e){
-    var data = {
-        time: 0,
-        totalTime: 100,
-        timeInc: 0.01,
+export default function App() {
+    const [data, updateData] = useState({
+        start: 0,
+        end: 11,
+        increment: 0.01,
         rho: 28,
         sigma: 10,
         beta: 8/3,
         x: 1,
-        y: 2,
-        z: 2
-    },
-    pointsArray = [];
+        y: 1,
+        z: 1
+    });
     
-    while(data.time < data.totalTime){
-            // x' = sigma*(y-x)
-            // y' = x*(rho - z) - y
-            // z' = x*y - beta*z
-            data.x = data.x + data.timeInc * (data.sigma * (data.y - data.x));
-            data.y = data.y + data.timeInc * (data.x * (data.rho - data.z) - data.y);
-            data.z = data.z + data.timeInc * (data.x * data.y - data.beta * data.z);
-            
-            pointsArray.push([data.x, data.y, data.z]);
-            
-            data.time = data.time + data.timeInc;
-    }
+    return (<>
+    <div id="side">
+        <h1>Lorenz Attractor</h1>
+        <p>The Lorenz system is a system of ordinary differential equations first studied by Edward Lorenz and Ellen Fetter. It is notable for having chaotic solutions for certain parameter values and initial conditions. In particular, the Lorenz attractor is a set of chaotic solutions of the Lorenz system. In popular media the 'butterfly effect' stems from the real-world implications of the Lorenz attractor, i.e. that in any physical system, in the absence of perfect knowledge of the initial conditions (even the minuscule disturbance of the air due to a butterfly flapping its wings), our ability to predict its future course will always fail. </p>
+        <hr />
+        <label>Start Time</label>
+        <input type="number" step="1" value={data.start} onChange={ (e)=>{ updateData({...data, start: parseFloat(e.target.value)})} } />
+        <hr />
+        <label>Stop Time</label>
+        <input type="number" step="10" value={data.end} onChange={ (e)=>{ updateData({...data, end: parseFloat(e.target.value)})} }/>
+        <hr />
+        <label>Increment</label>
+        <input type="number" step="0.01" value={data.increment} min={0.001} onChange={ (e)=>{ updateData({...data, increment: parseFloat(e.target.value)})} }/>
+        <hr />
+        <label>rho</label>
+        <input type="number" step="1" value={data.rho}  onChange={ (e)=>{ updateData({...data, rho: parseFloat(e.target.value)})} }/>
+        <hr />
+        <label>sigma</label>
+        <input type="number" step="1" value={data.sigma}  onChange={ (e)=>{ updateData({...data, sigma: parseFloat(e.target.value)})} }/>
+        <hr />
+    </div>
+    <div id="wrap">
+        <Canvas camera={{position: [0,0,-5], fov: 75}} pixelRatio={window.devicePixelRatio}>
+            <color attach="background" args={[0xf5f4f4]} />
+            <LineGeomTest data={data} />
+            <OrbitControls />
+        </Canvas>
+    </div>
     
-    return(pointsArray);
-}
-
-export default function App() {
-    return (<Canvas camera={{position: [0,0,-5], fov: 75}} pixelRatio={window.devicePixelRatio}>
-        <color attach="background" args={[0x7ec0ee]} />
-        <ambientLight color={ 0x404040 } intensity={0.3} />
-        <pointLight position={[0,4,5]} color={0xffffff} distance={10} decay={1} intensity={0.5} />
-        <hemisphereLight color={0xffffbb} groundColor={0x080820} intensity={0.33} />
-        <spotLight color={0xffffff} intensity={0.8} distance={7} angle={0.8} decay={1} penumbra={1} position={[5, 1, -2]} />
-        <LineGeomTest />
-        <OrbitControls />
-        <Html>
-        <h1>hello</h1>
-        <p>world</p>
-        </Html>
-    </Canvas>)
+    </>)
 }
