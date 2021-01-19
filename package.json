@@ -18,6 +18,9 @@
   "author": "edwin webb",
   "license": "MIT",
   "dependencies": {
+    "@react-spring/core": "^9.0.0-rc.3",
+    "@react-spring/three": "^9.0.0-rc.3",
+    "@react-spring/web": "^9.0.0-rc.3",
     "@react-three/drei": "^2.2.17",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
